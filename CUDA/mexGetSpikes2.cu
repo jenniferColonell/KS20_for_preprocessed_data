@@ -364,7 +364,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
           d_err, d_ftype, d_x, d_st, d_id, d_counter); // NT/Nthreads 
    
   // ignore peaks that are smaller than another nearby peak
-  cleanup_heights<<<1 + maxFR/32 , 32>>>(d_Params, d_x, d_st, d_id, d_st1, d_id1, d_counter); // 1 + maxFR/32
+  cleanup_heights<<<1 + maxFR/32, 32>>>(d_Params, d_x, d_st, d_id, d_st1, d_id1, d_counter); // 1 + maxFR/32
    
   // add new spikes to 2nd counter
   cudaMemcpy(counter,     d_counter+1, sizeof(int), cudaMemcpyDeviceToHost);

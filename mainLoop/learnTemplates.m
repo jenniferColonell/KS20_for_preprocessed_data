@@ -18,6 +18,7 @@ ops = rez.ops;
 % we need PC waveforms, as well as template waveforms
 [wTEMP, wPCA]    = extractTemplatesfromSnippets(rez, NrankPC);
 
+
 % move these to the GPU
 wPCA = gpuArray(wPCA(:, 1:Nrank));
 wTEMP = gpuArray(wTEMP);
@@ -120,11 +121,16 @@ for ibatch = 1:niter
 
     
     % resort the order of the templates according to best peak channel
+    % break ties with the value on that channel
     % this is important in order to have cohesive memory requests from the GPU RAM
-    [~, iW] = max(abs(dWU(nt0min, :, :)), [], 2); % max channel (either positive or negative peak)
+    % also ensures same order of templates for determinism
+    [maxVal, iW] = max(abs(dWU(nt0min, :, :)), [], 2); % max channel (either positive or negative peak)
     iW = int32(squeeze(iW));
-    
-    [iW, isort] = sort(iW); % sort by max abs channel
+    maxVal = double(squeeze(maxVal));
+    d_iW = double(iW);  % convert to double to make an array of all doubles for sortrows
+    [~,isort] = sortrows([d_iW, maxVal],[1,2]);
+
+    iW = iW(isort);
     W = W(:,isort, :); % user ordering to resort all the other template variables
     dWU = dWU(:,:,isort);
     nsp = nsp(isort);
@@ -139,12 +145,12 @@ for ibatch = 1:niter
     % such as when we subtract off a template
     [UtU, maskU] = getMeUtU(iW, iC, mask, Nnearest, Nchan); % this needs to change (but I don't know why!)
 
-
     % main CUDA function in the whole codebase. does the iterative template matching
     % based on the current templates, gets features for these templates if requested (featW, featPC),
     % gets scores for the template fits to each spike (vexp), outputs the average of
     % waveforms assigned to each cluster (dWU0),
     % and probably a few more things I forget about
+
     [st0, id0, x0, featW, dWU0, drez, nsp0, featPC, vexp, errmsg] = ...
         mexMPnu8(Params, dataRAW, single(U), single(W), single(mu), iC-1, iW-1, UtU, iList-1, ...
         wPCA);
@@ -235,6 +241,7 @@ for ibatch = 1:niter
             end
         end
     end
+
 end
 fclose(fid);
 toc
@@ -243,6 +250,7 @@ toc
 % final clean up, triage templates one last time
 [W, U, dWU, mu, nsp, ndrop] = ...
     triageTemplates2(ops, iW, C2C, W, U, dWU, mu, nsp, ndrop);
+
 % final covariance matrix between all templates
 [WtW, iList] = getMeWtW(single(W), single(U), Nnearest);
 % iW is the final channel assigned to each template
@@ -260,7 +268,7 @@ rez.iNeigh   = gather(iList);
 rez = memorizeW(rez, W, dWU, U, mu); % memorize the state of the templates
 rez.ops = ops; % update these (only rez comes out of this script)
 
-% save('rez_mid.mat', 'rez');
+%save(fullfile(ops.outdir,'rez_mid.mat'), 'rez', '-v7.3');
 
 fprintf('Finished learning templates \n')
 %%

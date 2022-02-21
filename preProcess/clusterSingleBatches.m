@@ -23,6 +23,7 @@ nPCs    = getOr(rez.ops, 'nPCs', 3);
 Nfilt = ceil(rez.ops.Nchan/2);
 tic
 wPCA    = extractPCfromSnippets(rez, nPCs); % extract PCA waveforms pooled over channels
+
 %JIC -- in what sense is this 7 PC waveforms? A single set of basis PCs is
 %calculated from all spikes found in every 100th batch.
 fprintf('Obtained 7 PC waveforms in %2.2f seconds \n', toc) % 7 is the default, and I don't think it needs to be able to change

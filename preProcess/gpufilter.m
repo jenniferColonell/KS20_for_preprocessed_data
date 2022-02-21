@@ -20,7 +20,7 @@ if ops.doFilter == 0
     return
 end
 
-fprintf('running filter\n')
+% fprintf('running filter\n')
 % subtract the mean from each channel; unnecessary if data has been filtered
 dataRAW = dataRAW - mean(dataRAW, 1); % subtract mean of each channel
 

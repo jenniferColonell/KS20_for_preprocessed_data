@@ -13,7 +13,7 @@
         % compile line for mexMPnu8.cu. -DENABLE_STABLEMODE must also
         % be specified. This version will run ~2X slower than the
         % non deterministic version.
-        mexcuda -largeArrayDims -dynamic -DENSURE_DETERM -DENABLE_STABLEMODE mexMPnu8.cu
+        mexcuda -largeArrayDims -dynamic -DENABLE_STABLEMODE mexMPnu8.cu
     else
         mexcuda -largeArrayDims mexMPnu8.cu
     end
