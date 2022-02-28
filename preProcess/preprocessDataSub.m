@@ -148,5 +148,4 @@ fclose(fid);
 
 fprintf('Time %3.0fs. Finished preprocessing %d batches. \n', toc, Nbatch);
 
-rez.ops = ops; % to record filter parameters
 rez.temp.Nbatch = Nbatch;
