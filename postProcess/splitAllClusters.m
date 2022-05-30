@@ -48,11 +48,12 @@ while ik<Nfilt
     ss = rez.st3(isp,1)/ops.fs; % convert to seconds
 
     clp0 = rez.cProjPC(isp, :, :); % get the PC projections for these spikes
-    clp0 = gpuArray(clp0(:,:));
+    clp0 = gpuArray(clp0(:,:)); % reshapes to nSpike x (nPCxnSite);
     clp = clp0 - mean(clp0,1); % mean center them
 
     clp = clp - my_conv2(clp, 250, 1); % subtract a running average, because the projections are NOT drift corrected
 
+    
     % now use two different ways to initialize the bimodal direction
     % the main script calls this function twice, and does both initializations
     if flag
