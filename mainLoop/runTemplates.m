@@ -57,9 +57,6 @@ st3 = st3(isort, :);
 fW = fW(:, isort);
 fWpc = fWpc(:, :, isort);
 
-% just display the total number of spikes
-fprintf( 'Number of spikes before applying cutoff: %d\n', size(st3,1));
-
 rez.st3 = st3;
 rez.st2 = st3; % keep also an st2 copy, because st3 will be over-written by one of the post-processing steps
 
@@ -102,3 +99,10 @@ for j = 1:Nfilt
 end
 
 fprintf('Finished compressing time-varying templates \n')
+
+% display the total number of spikes
+fprintf( 'Number of spikes before removing nan/inf and applying cutoff: %d\n', size(st3,1));
+% remove any spikes with undefined (nan or inf) PC projections
+rez = remove_bad_PCproj(rez);
+
+end
