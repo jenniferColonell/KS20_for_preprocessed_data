@@ -13,6 +13,14 @@ ops.nt0 	  = getOr(ops, {'nt0'}, 61); % number of time samples for the templates
 ops.nt0min  = getOr(ops, 'nt0min', ceil(20 * ops.nt0/61)); % time sample where the negative peak should be aligned
 ops.doFilter = getOr(ops,'doFilter',1); % if not specified assume filtering 
 
+if ~isfield(ops,'noZeroPad')
+    if ops.doFilter == 1
+        ops.noZeroPad = 0; % if not specified and filtering use zero pad
+    else
+        ops.noZeroPad = 1; % if not specified and not filtering, don't use zero pad
+    end
+end   
+
 NT       = ops.NT ; % number of timepoints per batch
 NchanTOT = ops.NchanTOT; % total number of channels in the raw binary file, including dead, auxiliary etc
 
@@ -23,8 +31,18 @@ ops.tend    = min(nTimepoints, ceil(ops.trange(2) * ops.fs)); % ending timepoint
 ops.sampsToRead = ops.tend-ops.tstart; % total number of samples to read
 ops.twind = ops.tstart * NchanTOT*2; % skip this many bytes at the start
 
-Nbatch      = ceil(ops.sampsToRead /(NT-ops.ntbuff)); % number of data batches
-ops.Nbatch = Nbatch;
+if ops.noZeroPad == 1
+    % only process data up to an integer number of batches, to avoid an
+    % 'edge' where the zero pad begins. May lose up to ~2 sec of data
+    % from a standard 384 channel NP run.
+    % Recommended if skipping filtering preprocessing in KS.
+    Nbatch = floor(ops.sampsToRead /(NT-ops.ntbuff)); % number of data batches
+    ops.sampsToRead = Nbatch*(NT-ops.ntbuff);
+    ops.tend = ops.sampsToRead/ops.fs;
+else 
+    Nbatch = ceil(ops.sampsToRead /(NT-ops.ntbuff)); % number of data batches
+    ops.Nbatch = Nbatch;
+end
 
 [chanMap, xc, yc, kcoords, NchanTOTdefault] = loadChanMap(ops.chanMap); % function to load channel map file
 ops.NchanTOT = getOr(ops, 'NchanTOT', NchanTOTdefault); % if NchanTOT was left empty, then overwrite with the default
