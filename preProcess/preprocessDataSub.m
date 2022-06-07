@@ -40,10 +40,10 @@ if ops.noZeroPad == 1
     ops.sampsToRead = Nbatch*(NT-ops.ntbuff);
     ops.tend = ops.sampsToRead/ops.fs;
 else 
-    Nbatch = ceil(ops.sampsToRead /(NT-ops.ntbuff)); % number of data batches
-    ops.Nbatch = Nbatch;
+    Nbatch = ceil(ops.sampsToRead /(NT-ops.ntbuff)); % number of data batches   
 end
 
+ops.Nbatch = Nbatch;
 [chanMap, xc, yc, kcoords, NchanTOTdefault] = loadChanMap(ops.chanMap); % function to load channel map file
 ops.NchanTOT = getOr(ops, 'NchanTOT', NchanTOTdefault); % if NchanTOT was left empty, then overwrite with the default
 
